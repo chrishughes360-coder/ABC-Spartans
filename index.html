@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ABC SPARTANS</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--red:#E8192C;--red-dark:#B01020;--bg:#0A0A0A;--bg2:#111;--bg3:#1A1A1A;--bg4:#222;--border:#2A2A2A;--text:#F0F0F0;--muted:#777;--gold:#D4A017}
+  input,select,textarea{color:#F0F0F0 !important;-webkit-text-fill-color:#F0F0F0 !important;caret-color:#F0F0F0 !important;color-scheme:dark !important;background-color:var(--bg4) !important}
+  input::placeholder,textarea::placeholder{color:var(--muted) !important;-webkit-text-fill-color:var(--muted) !important}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;overflow-x:hidden}
+
+header{background:#0A0A0A;border-bottom:2px solid var(–red);padding:14px 20px 12px;position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 24px #000000}
+.logo{font-family:‘Bebas Neue’,sans-serif;font-size:26px;letter-spacing:2px;line-height:1}
+.logo span{color:var(–red)}
+.header-right{display:flex;align-items:center;gap:8px}
+.sync-badge{font-family:‘Barlow Condensed’,sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;padding:4px 10px;border-radius:2px;text-transform:uppercase}
+.sync-badge.syncing{background:#333;color:var(–muted)}
+.sync-badge.synced{background:#16A34A;color:#fff}
+.sync-badge.error{background:var(–red);color:#fff}
+.lock-btn{background:none;border:none;font-size:20px;cursor:pointer;padding:2px 6px;line-height:1}
+
+.section{display:none}.section.active{display:block}
+.top-controls{padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(–border);background:var(–bg2)}
+.tc-label{font-family:‘Barlow Condensed’,sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(–muted)}
+.unit-toggle{display:flex;background:var(–bg4);border:1px solid var(–border);border-radius:6px;overflow:hidden}
+.unit-opt{padding:6px 16px;font-family:‘Barlow Condensed’,sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;border:none;background:none;color:var(–muted)}
+.unit-opt.active{background:var(–red);color:#fff}
+.section-header{padding:18px 20px 10px;display:flex;align-items:center;justify-content:space-between}
+.section-title{font-family:‘Bebas Neue’,sans-serif;font-size:22px;letter-spacing:2px}
+.section-title span{color:var(–red)}
+.add-btn{background:var(–red);color:#fff;border:none;border-radius:4px;padding:8px 16px;font-family:‘Barlow Condensed’,sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer}
+.add-btn:active{background:var(–red-dark)}
+.readonly-badge{background:var(–bg4);color:var(–muted);font-family:‘Barlow Condensed’,sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;padding:4px 10px;border-radius:3px;text-transform:uppercase;border:1px solid var(–border)}
+
+/* PIN */
+.pin-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;display:flex;align-items:center;justify-content:center}
+.pin-box{background:var(–bg3);border:1px solid var(–border);border-radius:12px;padding:28px 24px;width:280px;text-align:center}
+.pin-title{font-family:‘Bebas Neue’,sans-serif;font-size:24px;letter-spacing:2px;margin-bottom:6px}
+.pin-sub{font-size:12px;color:var(–muted);margin-bottom:18px;font-family:‘Barlow Condensed’,sans-serif;letter-spacing:.5px}
+.pin-input{width:100%;background:var(–bg4) !important;border:2px solid var(–border);border-radius:6px;color:#F0F0F0 !important;-webkit-text-fill-color:#F0F0F0 !important;font-family:‘Bebas Neue’,sans-serif;font-size:32px;text-align:center;padding:10px;outline:none;letter-spacing:8px;-webkit-box-shadow:0 0 0px 1000px var(–bg4) inset !important}
+.pin-input:focus{border-color:var(–red)}
+.pin-btn{margin-top:14px;width:100%;background:var(–red);color:#fff;border:none;border-radius:6px;padding:12px;font-family:‘Bebas Neue’,sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer}
+.pin-cancel{margin-top:10px;width:100%;background:none;color:var(–muted);border:none;font-family:‘Barlow Condensed’,sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:1px}
+.pin-error{color:var(–red);font-size:12px;font-family:‘Barlow Condensed’,sans-serif;margin-top:8px;letter-spacing:.5px;min-height:16px}
+
+/* ATHLETES */
+.athletes-list{padding:0 16px;display:flex;flex-direction:column;gap:10px;padding-bottom:140px}
+.athlete-card{background:var(–bg3);border:1px solid var(–border);border-radius:8px;overflow:hidden;transition:border-color .2s}
+.athlete-card.expanded{border-color:var(–red)}
+.card-header{padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;background:var(–bg3)}
+.athlete-num{width:28px;height:28px;background:var(–red);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:‘Bebas Neue’,sans-serif;font-size:15px;color:#fff;flex-shrink:0}
+.athlete-info{flex:1;min-width:0}
+.athlete-name-div{color:#F0F0F0;font-family:‘Barlow Condensed’,sans-serif;font-size:16px;font-weight:700;letter-spacing:.5px;width:100%;outline:none;min-height:20px}
+.athlete-name-div:empty:before{content:‘Athlete name’;color:var(–muted)}
+.athlete-subtitle{font-size:11px;color:var(–muted);margin-top:1px}
+.delete-btn{background:none;border:none;color:var(–muted);cursor:pointer;padding:4px;font-size:16px}
+.chevron{color:var(–muted);font-size:14px;transition:transform .2s}
+.athlete-card.expanded .chevron{transform:rotate(180deg)}
+.card-body{display:none;padding:0 16px 16px}
+.athlete-card.expanded .card-body{display:block}
+.lift-row{margin-bottom:14px}
+.lift-label{font-family:‘Barlow Condensed’,sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(–muted);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.weight-input-wrap{display:flex;align-items:center;background:var(–bg4);border:1px solid var(–border);border-radius:6px;overflow:hidden}
+.weight-input-wrap:focus-within{border-color:var(–red)}
+.weight-input{flex:1;background:var(–bg4) !important;border:none;color:#F0F0F0 !important;-webkit-text-fill-color:#F0F0F0 !important;font-family:‘Bebas Neue’,sans-serif;font-size:24px;letter-spacing:1px;padding:10px 14px;outline:none;text-align:center;-webkit-box-shadow:0 0 0px 1000px var(–bg4) inset !important}
+.unit-badge{background:var(–bg3);color:var(–muted);padding:0 14px;font-family:‘Barlow Condensed’,sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;height:100%;display:flex;align-items:center;border-left:1px solid var(–border)}
+.pct-table{background:var(–bg4);border-radius:6px;overflow:hidden;margin-top:8px}
+.pct-row{display:flex;align-items:center;padding:8px 12px;border-bottom:1px solid var(–border);gap:10px}
+.pct-row:last-child{border-bottom:none}
+.pct-badge{font-family:‘Bebas Neue’,sans-serif;font-size:14px;letter-spacing:1px;width:40px;text-align:center;flex-shrink:0}
+.pct-bar-wrap{flex:1;height:6px;background:var(–bg3);border-radius:3px;overflow:hidden}
+.pct-bar{height:100%;border-radius:3px;transition:width .4s cubic-bezier(.34,1.56,.64,1)}
+.pct-weight{font-family:‘Bebas Neue’,sans-serif;font-size:18px;letter-spacing:.5px;width:55px;text-align:right;flex-shrink:0}
+.pct-weight.empty{color:var(–border)}
+.pct-zone{font-family:‘Barlow Condensed’,sans-serif;font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;width:70px;text-align:right;flex-shrink:0}
+
+/* OVERVIEW */
+.overview-header{padding:18px 20px 14px;border-bottom:1px solid var(–border)}
+.overview-title{font-family:‘Bebas Neue’,sans-serif;font-size:22px;letter-spacing:2px}
+.overview-sub{font-size:12px;color:var(–muted);margin-top:2px;font-family:‘Barlow Condensed’,sans-serif;letter-spacing:.5px}
+.overview-grid{padding:16px;display:flex;flex-direction:column;gap:8px;padding-bottom:120px}
+.overview-row{background:var(–bg3);border:1px solid var(–border);border-radius:8px;overflow:hidden}
+.overview-athlete-name{padding:10px 14px 6px;font-family:‘Barlow Condensed’,sans-serif;font-size:15px;font-weight:700;border-bottom:1px solid var(–border)}
+.overview-lifts{display:grid;grid-template-columns:1fr 1fr 1fr}
+.overview-lift-cell{padding:10px 14px;border-right:1px solid var(–border)}
+.overview-lift-cell:last-child{border-right:none}
+.olc-label{font-size:10px;font-family:‘Barlow Condensed’,sans-serif;letter-spacing:1px;text-transform:uppercase;color:var(–muted);margin-bottom:4px}
+.olc-value{font-family:‘Bebas Neue’,sans-serif;font-size:22px;letter-spacing:.5px}
+.olc-value.zero{color:var(–border)}
+.olc-total-row{padding:8px 14px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(–border);background:var(–bg4)}
+.olc-total-label{font-family:‘Barlow Condensed’,sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(–muted)}
+.olc-total-value{font-family:‘Bebas Neue’,sans-serif;font-size:20px;color:var(–gold)}
+
+/* PR */
+.pr-list{padding:16px;display:flex;flex-direction:column;gap:10px;padding-bottom:140px}
+.pr-card{background:var(–bg3);border:1px solid var(–border);border-radius:8px;overflow:hidden}
+.pr-card-header{padding:12px 14px;background:var(–bg4);border-bottom:1px solid var(–border);display:flex;align-items:center;gap:10px}
+.pr-athlete-num{width:24px;height:24px;background:var(–red);border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:‘Bebas Neue’,sans-serif;font-size:13px;color:#fff;flex-shrink:0}
+.pr-athlete-name{font-family:‘Barlow Condensed’,sans-serif;font-size:16px;font-weight:700;flex:1}
+.pr-total-badge{font-family:‘Bebas Neue’,sans-serif;font-size:16px;color:var(–gold)}
+.pr-lifts{display:grid;grid-template-columns:1fr 1fr 1fr}
+.pr-lift-cell{padding:10px 10px;border-right:1px solid var(–border)}
+.pr-lift-cell:last-child{border-right:none}
+.pr-lift-label{font-family:‘Barlow Condensed’,sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(–muted);margin-bottom:5px}
+.pr-weight-display{font-family:‘Bebas Neue’,sans-serif;font-size:20px;color:var(–text);margin-bottom:6px}
+.pr-weight-display.zero{color:var(–border);font-size:14px}
+.pr-field-label{font-family:‘Barlow Condensed’,sans-serif;font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(–muted);margin-bottom:2px;margin-top:5px}
+.pr-input{width:100%;background:var(–bg) !important;border:1px solid var(–border);border-radius:4px;color:#F0F0F0 !important;-webkit-text-fill-color:#F0F0F0 !important;font-family:‘Bebas Neue’,sans-serif;font-size:15px;text-align:center;padding:4px;outline:none;-webkit-box-shadow:0 0 0px 1000px var(–bg) inset !important}
+.pr-input:focus{border-color:var(–red)}
+.pr-text-input{width:100%;background:var(–bg) !important;border:1px solid var(–border);border-radius:4px;color:#F0F0F0 !important;-webkit-text-fill-color:#F0F0F0 !important;font-family:‘Barlow’,sans-serif;font-size:11px;padding:4px 5px;outline:none;-webkit-box-shadow:0 0 0px 1000px var(–bg) inset !important}
+.pr-text-input:focus{border-color:var(–red)}
+
+/* PROGRAM */
+.program-top{padding:14px 16px;border-bottom:1px solid var(–border);background:var(–bg2)}
+.program-athlete-select{width:100%;background:var(–bg4);border:1px solid var(–border);border-radius:6px;color:var(–text);font-family:‘Barlow Condensed’,sans-serif;font-size:15px;font-weight:700;padding:10px 14px;outline:none;appearance:none;cursor:pointer}
+.week-tabs{display:flex;overflow-x:auto;scrollbar-width:none;background:var(–bg2);border-bottom:1px solid var(–border)}
+.week-tabs::-webkit-scrollbar{display:none}
+.week-tab{flex-shrink:0;padding:10px 14px;font-family:‘Barlow Condensed’,sans-serif;font-size:13px;font-weight:700;color:var(–muted);border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+.week-tab.active{color:var(–red);border-bottom-color:var(–red)}
+.program-body{padding:16px;padding-bottom:120px;display:flex;flex-direction:column;gap:12px}
+.prog-lift-card{background:var(–bg3);border:1px solid var(–border);border-radius:8px;overflow:hidden}
+.prog-lift-header{padding:12px 14px;border-bottom:1px solid var(–border);display:flex;align-items:center;justify-content:space-between;background:var(–bg4)}
+.prog-lift-title{font-family:‘Bebas Neue’,sans-serif;font-size:18px;letter-spacing:1.5px;display:flex;align-items:center;gap:8px}
+.prog-1rm-badge{font-family:‘Barlow Condensed’,sans-serif;font-size:12px;font-weight:600;color:var(–muted)}
+.prog-sets-table{width:100%;border-collapse:collapse}
+.prog-sets-table th{font-family:‘Barlow Condensed’,sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(–muted);padding:8px 10px;border-bottom:1px solid var(–border);text-align:center}
+.prog-sets-table th:first-child{text-align:left;padding-left:14px}
+.prog-sets-table td{padding:6px 8px;border-bottom:1px solid var(–border);text-align:center;vertical-align:middle}
+.prog-sets-table td:first-child{padding-left:14px;text-align:left}
+.prog-sets-table tr:last-child td{border-bottom:none}
+.prog-mini-input{width:54px;background:var(–bg4) !important;border:1px solid var(–border);border-radius:4px;color:#F0F0F0 !important;-webkit-text-fill-color:#F0F0F0 !important;font-family:‘Bebas Neue’,sans-serif;font-size:17px;text-align:center;padding:5px 4px;outline:none}
+.prog-pct-select{background:var(–bg4);border:1px solid var(–border);border-radius:4px;color:var(–text);font-family:‘Barlow Condensed’,sans-serif;font-size:13px;font-weight:700;padding:5px 6px;outline:none;cursor:pointer;appearance:none;text-align:center}
+.prog-weight-out{font-family:‘Bebas Neue’,sans-serif;font-size:20px;color:var(–gold)}
+.prog-weight-out.zero{color:var(–border);font-size:16px}
+.add-set-btn{margin:10px 14px;background:none;border:1px dashed var(–border);border-radius:4px;color:var(–muted);font-family:‘Barlow Condensed’,sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;padding:8px;width:calc(100% - 28px);cursor:pointer;text-transform:uppercase}
+.del-set-btn{background:none;border:none;color:var(–border);cursor:pointer;font-size:14px;padding:2px 4px}
+.week-summary{padding:10px 16px;background:var(–bg2);border-bottom:1px solid var(–border);display:flex;gap:16px}
+.week-sum-item{text-align:center}
+.week-sum-label{font-family:‘Barlow Condensed’,sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(–muted)}
+.week-sum-val{font-family:‘Bebas Neue’,sans-serif;font-size:18px;color:var(–text)}
+.prog-stat-text{font-family:‘Bebas Neue’,sans-serif;font-size:17px;color:var(–text)}
+.prog-pct-text{font-family:‘Barlow Condensed’,sans-serif;font-size:13px;font-weight:700;color:var(–muted)}
+
+/* ACCESSORY */
+.acc-search-wrap{padding:12px 16px;background:var(–bg2);border-bottom:1px solid var(–border)}
+.acc-search{width:100%;background:var(–bg4);border:1px solid var(–border);border-radius:6px;color:var(–text);font-family:‘Barlow’,sans-serif;font-size:14px;padding:9px 14px;outline:none}
+.acc-search:focus{border-color:var(–red)}
+.muscle-tabs{display:flex;overflow-x:auto;scrollbar-width:none;background:var(–bg2);border-bottom:1px solid var(–border)}
+.muscle-tabs::-webkit-scrollbar{display:none}
+.muscle-tab{flex-shrink:0;padding:10px 14px;font-family:‘Barlow Condensed’,sans-serif;font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(–muted);border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+.muscle-tab.active{color:var(–red);border-bottom-color:var(–red)}
+.acc-list{padding:14px 16px;display:flex;flex-direction:column;gap:8px;padding-bottom:120px}
+.acc-card{background:var(–bg3);border:1px solid var(–border);border-radius:8px;overflow:hidden;cursor:pointer}
+.acc-card.open{border-color:var(–red)}
+.acc-card-header{padding:13px 14px;display:flex;align-items:center;gap:12px}
+.acc-muscle-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.acc-name{font-family:‘Barlow Condensed’,sans-serif;font-size:16px;font-weight:700;flex:1}
+.acc-tags{display:flex;gap:5px;flex-wrap:wrap}
+.acc-tag{font-family:‘Barlow Condensed’,sans-serif;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:2px 7px;border-radius:3px;background:var(–bg4);color:var(–muted);border:1px solid var(–border)}
+.acc-chevron{color:var(–muted);font-size:13px;transition:transform .2s;flex-shrink:0}
+.acc-card.open .acc-chevron{transform:rotate(180deg)}
+.acc-detail{display:none;padding:0 14px 14px}
+.acc-card.open .acc-detail{display:block}
+.acc-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.acc-detail-item{background:var(–bg4);border-radius:5px;padding:9px 12px}
+.acc-detail-label{font-family:‘Barlow Condensed’,sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(–muted);margin-bottom:3px}
+.acc-detail-val{font-family:‘Barlow Condensed’,sans-serif;font-size:14px;font-weight:700}
+.acc-desc{font-size:13px;color:var(–muted);line-height:1.6;margin-bottom:10px}
+.acc-cues{background:var(–bg4);border-radius:5px;padding:10px 12px}
+.acc-cues-title{font-family:‘Barlow Condensed’,sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:7px}
+.acc-cue{font-size:12px;color:var(–muted);padding:3px 0 3px 12px;position:relative;line-height:1.5}
+.acc-cue::before{content:‘▸’;position:absolute;left:0;font-size:10px;top:4px}
+.acc-sets-rec{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.acc-set-chip{background:var(–bg4);border:1px solid var(–border);border-radius:4px;padding:5px 10px;font-family:‘Barlow Condensed’,sans-serif;font-size:12px;font-weight:700;color:var(–muted)}
+.acc-set-chip span{color:var(–text)}
+.no-results{text-align:center;padding:40px 20px;color:var(–muted)}
+
+.empty-state{text-align:center;padding:60px 32px;color:var(–muted)}
+.empty-icon{font-size:52px;margin-bottom:16px;opacity:.4}
+.empty-title{font-family:‘Bebas Neue’,sans-serif;font-size:22px;letter-spacing:2px;opacity:.4;margin-bottom:8px}
+.empty-sub{font-size:13px;line-height:1.5}
+.prog-empty{text-align:center;padding:40px 20px;color:var(–muted)}
+.prog-empty-icon{font-size:40px;opacity:.3;margin-bottom:10px}
+.prog-empty-title{font-family:‘Bebas Neue’,sans-serif;font-size:18px;letter-spacing:2px;opacity:.4;margin-bottom:6px}
+.prog-empty-sub{font-size:12px;line-height:1.5}
+
+.loading-overlay{position:fixed;inset:0;background:var(–bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.loading-logo{font-family:‘Bebas Neue’,sans-serif;font-size:42px;letter-spacing:4px}
+.loading-logo span{color:var(–red)}
+.loading-sub{font-family:‘Barlow Condensed’,sans-serif;font-size:13px;font-weight:600;letter-spacing:2px;color:var(–muted);text-transform:uppercase}
+.spinner{width:32px;height:32px;border:3px solid var(–border);border-top-color:var(–red);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#111111;border-top:3px solid var(–red);display:flex;z-index:9999;padding-bottom:env(safe-area-inset-bottom)}
+.bottom-nav::before{content:’’;position:absolute;top:-20px;left:0;right:0;height:20px;background:linear-gradient(transparent,#111111);pointer-events:none}
+.nav-btn{flex:1;background:none;border:none;color:var(–muted);padding:10px 2px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;font-family:‘Barlow Condensed’,sans-serif;font-size:8px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.nav-btn .nav-icon{font-size:19px}
+.nav-btn.active{color:var(–red)}
+</style>
+
+</head>
+<body>
+
+<div class="loading-overlay" id="loading">
+  <div class="loading-logo">ABC <span>SPARTANS</span></div>
+  <div class="spinner"></div>
+  <div class="loading-sub">Connecting to database…</div>
+</div>
+
+<!-- PIN OVERLAY -->
+
+<div class="pin-overlay" id="pin-overlay" style="display:none">
+  <div class="pin-box">
+    <div class="pin-title">COACH ACCESS</div>
+    <div class="pin-sub">Enter your PIN to enable editing</div>
+    <input class="pin-input" type="password" inputmode="numeric" maxlength="6" id="pin-input" placeholder="••••" />
+    <div class="pin-error" id="pin-error"></div>
+    <button class="pin-btn" onclick="submitPin()">UNLOCK</button>
+    <button class="pin-cancel" onclick="cancelPin()">Cancel</button>
+  </div>
+</div>
+
+<header>
+  <div class="logo">ABC <span>SPARTANS</span></div>
+  <div class="header-right">
+    <div class="sync-badge syncing" id="sync-badge">⟳ SYNCING</div>
+    <button class="lock-btn" id="lock-btn" onclick="toggleCoachMode()">🔒</button>
+  </div>
+</header>
+
+<!-- ATHLETES -->
+
+<div class="section active" id="sec-athletes">
+  <div class="top-controls">
+    <div class="tc-label">Unit</div>
+    <div class="unit-toggle">
+      <button class="unit-opt active" onclick="setUnit('lbs')">LBS</button>
+      <button class="unit-opt" onclick="setUnit('kg')">KG</button>
+    </div>
+  </div>
+  <div class="section-header">
+    <div class="section-title">ATHLETE <span>LIFTS</span></div>
+    <div id="athletes-hdr-btn"><span class="readonly-badge">VIEW ONLY</span></div>
+  </div>
+  <div class="athletes-list" id="athletes-list"></div>
+  <div id="athletes-empty" class="empty-state" style="display:none">
+    <div class="empty-icon">🏋️</div><div class="empty-title">No Athletes Yet</div>
+    <div class="empty-sub">Tap + ADD to start building your team roster</div>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+
+<div class="section" id="sec-overview">
+  <div class="overview-header">
+    <div class="overview-title">TEAM OVERVIEW</div>
+    <div class="overview-sub">All athletes • Max lifts summary</div>
+  </div>
+  <div class="overview-grid" id="overview-grid"></div>
+  <div id="overview-empty" class="empty-state" style="display:none">
+    <div class="empty-icon">📊</div><div class="empty-title">No Data Yet</div>
+    <div class="empty-sub">Add athletes and enter lifts to see the team overview</div>
+  </div>
+</div>
+
+<!-- RECORDS -->
+
+<div class="section" id="sec-pr">
+  <div class="overview-header">
+    <div class="overview-title">🏆 TEAM <span style="color:var(--red)">RECORDS</span></div>
+    <div class="overview-sub">Best ever competition attempts per athlete</div>
+  </div>
+  <div class="pr-list" id="pr-list"></div>
+  <div id="pr-empty" class="empty-state" style="display:none">
+    <div class="empty-icon">🏆</div><div class="empty-title">No Athletes Yet</div>
+    <div class="empty-sub">Add athletes first to track their competition PRs</div>
+  </div>
+</div>
+
+<!-- PROGRAM -->
+
+<div class="section" id="sec-program">
+  <div class="overview-header">
+    <div class="overview-title">12-WEEK <span style="color:var(--red)">PROGRAM</span></div>
+    <div class="overview-sub">Auto-calculated weights from 1RM</div>
+  </div>
+  <div class="program-top">
+    <select class="program-athlete-select" id="prog-athlete-select" onchange="renderProgram()">
+      <option value="">— Select Athlete —</option>
+    </select>
+  </div>
+  <div id="prog-content"></div>
+</div>
+
+<!-- EXERCISES -->
+
+<div class="section" id="sec-accessory">
+  <div class="overview-header">
+    <div class="overview-title">ACCESSORY <span style="color:var(--red)">DATABASE</span></div>
+    <div class="overview-sub">Exercises by muscle group</div>
+  </div>
+  <div class="acc-search-wrap">
+    <input class="acc-search" type="text" placeholder="Search exercises…" id="acc-search-input" oninput="filterAccessory()">
+  </div>
+  <div class="muscle-tabs" id="muscle-tabs"></div>
+  <div class="acc-list" id="acc-list"></div>
+</div>
+
+<div class="bottom-nav">
+  <button class="nav-btn active" id="nav-athletes" onclick="showSection('athletes')"><span class="nav-icon">🏋️</span>Athletes</button>
+  <button class="nav-btn" id="nav-overview" onclick="showSection('overview')"><span class="nav-icon">📊</span>Overview</button>
+  <button class="nav-btn" id="nav-pr" onclick="showSection('pr')"><span class="nav-icon">🏆</span>Records</button>
+  <button class="nav-btn" id="nav-program" onclick="showSection('program')"><span class="nav-icon">📅</span>Program</button>
+  <button class="nav-btn" id="nav-accessory" onclick="showSection('accessory')"><span class="nav-icon">💪</span>Exercises</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCi82IsEIH8c4PdJrMmcWuKjW10693-1a0",
+  authDomain: "abc-spartans-numbers.firebaseapp.com",
+  projectId: "abc-spartans-numbers",
+  storageBucket: "abc-spartans-numbers.firebasestorage.app",
+  messagingSenderId: "198943932199",
+  appId: "1:198943932199:web:c94590ba354c4690a03302"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ── CONSTANTS ──────────────────────────────────────────────────────────────
+const COACH_PIN = '3600';
+const PROGRAM_TEMPLATE = [
+  {pct:60, sets:3, reps:14},
+  {pct:63, sets:3, reps:14},
+  {pct:70, sets:3, reps:10},
+  {pct:73, sets:3, reps:10},
+  {pct:77, sets:3, reps:8},
+  {pct:77, sets:3, reps:8},
+  {pct:82, sets:3, reps:6},
+  {pct:88, sets:3, reps:5},
+  {pct:95, sets:3, reps:4},
+  {pct:98, sets:3, reps:3},
+  {pct:102,sets:1, reps:1},
+  {pct:105,sets:1, reps:1},
+];
+const PCT_OPTS = [105,102,100,98,95,92,90,88,85,82,80,78,77,75,73,72,70,67,65,63,60,55,50];
+const PERCENTS = [
+  {pct:100,label:'100%',zone:'MAX',color:'#E8192C'},{pct:95,label:'95%',zone:'NEAR MAX',color:'#F05020'},
+  {pct:90,label:'90%',zone:'STRENGTH',color:'#E07010'},{pct:85,label:'85%',zone:'HEAVY',color:'#C89010'},
+  {pct:80,label:'80%',zone:'MODERATE',color:'#8AAA10'},{pct:75,label:'75%',zone:'VOLUME',color:'#30A830'},
+  {pct:70,label:'70%',zone:'HYPERTROPHY',color:'#10A870'},{pct:65,label:'65%',zone:'BUILD',color:'#1090C0'},
+  {pct:60,label:'60%',zone:'ENDURANCE',color:'#2070D8'},{pct:55,label:'55%',zone:'RECOVERY',color:'#5050D0'},
+  {pct:50,label:'50%',zone:'WARMUP',color:'#8040B0'},
+];
+const LIFTS = [{key:'squat',icon:'🦵',label:'SQUAT'},{key:'bench',icon:'💪',label:'BENCH'},{key:'deadlift',icon:'⛓️',label:'DEADLIFT'}];
+const MUSCLE_GROUPS = [
+  {id:'all',label:'All',icon:'🔥',color:'#E8192C'},{id:'quads',label:'Quads',icon:'🦵',color:'#E07010'},
+  {id:'hamstrings',label:'Hamstrings',icon:'🔗',color:'#C89010'},{id:'glutes',label:'Glutes',icon:'🍑',color:'#8AAA10'},
+  {id:'back',label:'Back',icon:'🏔️',color:'#10A870'},{id:'chest',label:'Chest',icon:'💪',color:'#1090C0'},
+  {id:'shoulders',label:'Shoulders',icon:'🎯',color:'#5050D0'},{id:'triceps',label:'Triceps',icon:'💥',color:'#8040B0'},
+  {id:'biceps',label:'Biceps',icon:'🔱',color:'#D4A017'},{id:'core',label:'Core',icon:'⚡',color:'#E8192C'},
+  {id:'calves',label:'Calves',icon:'🦿',color:'#30A830'},
+];
+const ACCESSORIES = [
+  {name:'Leg Press',muscle:'quads',equipment:'Machine',type:'Compound',sets:'3–4',reps:'8–15',desc:'Machine-based quad dominant push pattern.',cues:['Feet shoulder-width','Drive through full foot','Control descent','Back pressed into pad']},
+  {name:'Hack Squat',muscle:'quads',equipment:'Machine',type:'Compound',sets:'3–4',reps:'6–12',desc:'Isolates quads with minimal lower back stress.',cues:['Low foot = quads; high = glutes','Chest up','Full depth','Drive knees out']},
+  {name:'Bulgarian Split Squat',muscle:'quads',equipment:'Barbell/Dumbbell',type:'Compound',sets:'3',reps:'8–12 each',desc:'Unilateral quad builder that corrects imbalances.',cues:['Rear foot on bench','Front shin vertical','Drop hips down','Torso upright']},
+  {name:'Leg Extension',muscle:'quads',equipment:'Machine',type:'Isolation',sets:'3–4',reps:'10–20',desc:'Pure quad isolation.',cues:['Pause at full extension','Control eccentric','No swinging','Full ROM']},
+  {name:'Front Squat',muscle:'quads',equipment:'Barbell',type:'Compound',sets:'3–4',reps:'4–8',desc:'Builds upright posture and quad strength.',cues:['High elbows','Stay tall','Knees track over toes','Core braced']},
+  {name:'Romanian Deadlift',muscle:'hamstrings',equipment:'Barbell/Dumbbell',type:'Compound',sets:'3–4',reps:'6–12',desc:'Hip hinge that loads hamstrings through full range.',cues:['Soft knee bend','Push hips back','Feel stretch before reversing','Bar close to legs']},
+  {name:'Nordic Curl',muscle:'hamstrings',equipment:'Bodyweight',type:'Isolation',sets:'3',reps:'4–8',desc:'Eccentric hamstring work with high injury prevention value.',cues:['Lower as slowly as possible','Use hands on return','Progress from partial range','Hips extended']},
+  {name:'Lying Leg Curl',muscle:'hamstrings',equipment:'Machine',type:'Isolation',sets:'3–4',reps:'10–15',desc:'Isolates hamstrings at both knee and hip.',cues:['Hips pressed into pad','Full ROM','Control descent','Squeeze at top']},
+  {name:'Good Morning',muscle:'hamstrings',equipment:'Barbell',type:'Compound',sets:'3',reps:'8–12',desc:'Strengthens posterior chain and back extensors.',cues:['Bar high on traps','Hinge at hips','Feel hamstring stretch','Drive hips forward']},
+  {name:'Hip Thrust',muscle:'glutes',equipment:'Barbell/Machine',type:'Compound',sets:'3–4',reps:'8–15',desc:'The premier glute builder.',cues:['Upper back on bench','Drive through heels','Squeeze hard at top','Chin tucked']},
+  {name:'Cable Pull-Through',muscle:'glutes',equipment:'Cable',type:'Compound',sets:'3',reps:'12–15',desc:'Hip hinge with constant cable tension.',cues:['Face away from stack','Hinge at hips','Drive hips forward','Arms loose']},
+  {name:'Step-Up',muscle:'glutes',equipment:'Dumbbell/Barbell',type:'Compound',sets:'3',reps:'10–12 each',desc:'Functional glute and balance builder.',cues:['Step through heel','No push from back foot','Torso upright','Full hip extension']},
+  {name:'Barbell Row',muscle:'back',equipment:'Barbell',type:'Compound',sets:'3–4',reps:'5–10',desc:'Builds upper back thickness and lat strength.',cues:['Torso near parallel','Pull to lower chest','Elbows back','Retract scapula']},
+  {name:'Lat Pulldown',muscle:'back',equipment:'Cable',type:'Compound',sets:'3–4',reps:'8–15',desc:'Vertical pull for lat development.',cues:['Pull to upper chest','Lean slightly back','Drive elbows down','Full stretch at top']},
+  {name:'Seated Cable Row',muscle:'back',equipment:'Cable',type:'Compound',sets:'3–4',reps:'10–15',desc:'Targets mid back, traps, and rhomboids.',cues:['Sit tall','Pull to lower chest','Squeeze blades','Full stretch']},
+  {name:'Face Pull',muscle:'back',equipment:'Cable',type:'Isolation',sets:'3–4',reps:'12–20',desc:'Critical for shoulder health in benchers.',cues:['Cable at eye level','Pull to forehead','Externally rotate','Light weight, high reps']},
+  {name:'T-Bar Row',muscle:'back',equipment:'Barbell/Machine',type:'Compound',sets:'3–4',reps:'8–12',desc:'Great for upper back thickness.',cues:['Neutral grip','Chest on pad','Row to lower chest','No hip jerking']},
+  {name:'Dumbbell Bench Press',muscle:'chest',equipment:'Dumbbell',type:'Compound',sets:'3–4',reps:'8–15',desc:'Greater ROM and shoulder-friendly pressing.',cues:['Feet flat, arch maintained','Press from lower chest','Full ROM','Control eccentric']},
+  {name:'Incline Barbell Press',muscle:'chest',equipment:'Barbell',type:'Compound',sets:'3–4',reps:'6–10',desc:'Targets upper chest.',cues:['30–45° incline','Slightly narrower grip','Elbows ~60°','Touch upper chest']},
+  {name:'Cable Fly',muscle:'chest',equipment:'Cable',type:'Isolation',sets:'3',reps:'12–15',desc:'Constant tension chest isolation.',cues:['Slight elbow bend','Squeeze pecs together','Control stretch','Vary cable height']},
+  {name:'Dips',muscle:'chest',equipment:'Bodyweight/Weighted',type:'Compound',sets:'3',reps:'8–15',desc:'Tricep and chest builder.',cues:['Lean forward for chest','Full depth','Protect shoulders','Add weight when ready']},
+  {name:'Close-Grip Bench Press',muscle:'chest',equipment:'Barbell',type:'Compound',sets:'3',reps:'6–10',desc:'Shifts emphasis to triceps and inner chest.',cues:['Hands inside shoulders','Elbows tucked','Full ROM','Same arch as competition']},
+  {name:'Overhead Press',muscle:'shoulders',equipment:'Barbell/Dumbbell',type:'Compound',sets:'3–4',reps:'5–10',desc:'Fundamental overhead strength.',cues:['Brace core','Straight bar path','Full lockout','No excessive lean']},
+  {name:'Lateral Raise',muscle:'shoulders',equipment:'Dumbbell/Cable',type:'Isolation',sets:'3–4',reps:'12–20',desc:'Side delt isolation for shoulder width.',cues:['Slight elbow bend','Raise to shoulder height','Lead with elbow','Control descent']},
+  {name:'Arnold Press',muscle:'shoulders',equipment:'Dumbbell',type:'Compound',sets:'3',reps:'10–12',desc:'Hits all three delt heads.',cues:['Start palms facing you','Rotate out as you press','Full ROM','Deliberate rotation']},
+  {name:'Rear Delt Fly',muscle:'shoulders',equipment:'Dumbbell/Cable',type:'Isolation',sets:'3–4',reps:'15–20',desc:'Essential for shoulder health.',cues:['Hinge forward','Arms arc to sides','Squeeze at top','Light weight']},
+  {name:'Tricep Pushdown',muscle:'triceps',equipment:'Cable',type:'Isolation',sets:'3–4',reps:'10–20',desc:'Most common tricep isolation.',cues:['Elbows at sides','Full extension','Spread rope at bottom','Torso upright']},
+  {name:'Skull Crusher',muscle:'triceps',equipment:'Barbell/EZ-Bar',type:'Isolation',sets:'3–4',reps:'8–12',desc:'Builds long head mass for lockout strength.',cues:['Lower to forehead','Elbows at ceiling','Controlled descent','EZ-bar for comfort']},
+  {name:'JM Press',muscle:'triceps',equipment:'Barbell',type:'Compound',sets:'3',reps:'6–10',desc:'Powerlifting-specific tricep movement.',cues:['Elbows slightly flared','Lower toward throat','Triceps drive press','Great for lockout']},
+  {name:'Overhead Tricep Extension',muscle:'triceps',equipment:'Dumbbell/Cable',type:'Isolation',sets:'3',reps:'10–15',desc:'Trains long head in stretched position.',cues:['Elbows close to head','Full stretch at bottom','Extend fully','No flaring']},
+  {name:'Barbell Curl',muscle:'biceps',equipment:'Barbell',type:'Isolation',sets:'3–4',reps:'8–12',desc:'Classic bicep builder.',cues:['Elbows pinned','Full ROM','Control eccentric','No swinging']},
+  {name:'Hammer Curl',muscle:'biceps',equipment:'Dumbbell',type:'Isolation',sets:'3',reps:'10–15',desc:'Targets brachialis and brachioradialis.',cues:['Neutral grip','Curl to shoulder height','Elbows stationary','Controlled']},
+  {name:'Incline Dumbbell Curl',muscle:'biceps',equipment:'Dumbbell',type:'Isolation',sets:'3',reps:'10–12',desc:'Trains bicep in stretched position.',cues:['45° incline','Arms hang extended','Full supination at top','No swinging']},
+  {name:'Cable Curl',muscle:'biceps',equipment:'Cable',type:'Isolation',sets:'3',reps:'12–15',desc:'Constant tension through full ROM.',cues:['Close to stack','Elbows at sides','Squeeze at top','Slow eccentric']},
+  {name:'Ab Wheel Rollout',muscle:'core',equipment:'Ab Wheel',type:'Isolation',sets:'3',reps:'8–12',desc:'Builds anti-extension core strength.',cues:['Start from knees','Hips in line','Breathe out going out','Only as far as controlled']},
+  {name:'Plank',muscle:'core',equipment:'Bodyweight',type:'Isolation',sets:'3',reps:'30–60s',desc:'Isometric anti-extension stability.',cues:['Head to heels straight','Squeeze glutes and abs','No sagging','Breathe steadily']},
+  {name:'Pallof Press',muscle:'core',equipment:'Cable',type:'Isolation',sets:'3',reps:'10–12 each',desc:'Anti-rotation stability for all lifts.',cues:['Perpendicular to cable','Press out and hold','Resist rotation','Reset between reps']},
+  {name:'Back Extension',muscle:'core',equipment:'GHD/Bench',type:'Compound',sets:'3–4',reps:'10–15',desc:'Trains erectors and posterior chain.',cues:['Hinge at hips','Add weight at chest','Neutral spine at top','Squeeze glutes']},
+  {name:'Suitcase Carry',muscle:'core',equipment:'Dumbbell/Kettlebell',type:'Compound',sets:'3',reps:'30–40m each',desc:'Lateral core stability and grip.',cues:['One hand only','Stand tall','Brace against weight','Short controlled steps']},
+  {name:'Standing Calf Raise',muscle:'calves',equipment:'Machine/Bodyweight',type:'Isolation',sets:'4',reps:'15–25',desc:'Primary gastrocnemius exercise.',cues:['Full stretch at bottom','Rise onto toes','Pause at top','Slow reps']},
+  {name:'Seated Calf Raise',muscle:'calves',equipment:'Machine',type:'Isolation',sets:'4',reps:'15–25',desc:'Targets the soleus.',cues:['Full ROM','Pad above knee','No bouncing','Pause at contraction']},
+  {name:'Leg Press Calf Raise',muscle:'calves',equipment:'Machine',type:'Isolation',sets:'3',reps:'15–20',desc:'Calf raise on leg press.',cues:['Balls of feet on edge','Full ROM','Control stretch','No full lockout']},
+];
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let unit='lbs', athletes=[], program={}, prs={}, progWeek=1;
+let activeMuscle='all', openAccId=null, saveTimer=null, coachMode=false;
+
+// ── SYNC ───────────────────────────────────────────────────────────────────
+function setSyncBadge(s){
+  const b=document.getElementById('sync-badge');
+  b.className='sync-badge '+s;
+  b.textContent=s==='synced'?'✓ LIVE':s==='error'?'✕ OFFLINE':'⟳ SYNCING';
+}
+function scheduleSave(){
+  setSyncBadge('syncing');
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(async()=>{
+    try{await setDoc(doc(db,'spartans','data'),{athletes,program,unit,prs});setSyncBadge('synced');}
+    catch(e){setSyncBadge('error');}
+  },800);
+}
+
+// ── COACH MODE ─────────────────────────────────────────────────────────────
+function toggleCoachMode(){
+  if(coachMode){coachMode=false;updateCoachUI();return;}
+  document.getElementById('pin-overlay').style.display='flex';
+  setTimeout(()=>document.getElementById('pin-input').focus(),100);
+}
+function submitPin(){
+  const val=document.getElementById('pin-input').value;
+  if(val===COACH_PIN){
+    coachMode=true;
+    document.getElementById('pin-overlay').style.display='none';
+    document.getElementById('pin-input').value='';
+    document.getElementById('pin-error').textContent='';
+    updateCoachUI();
+  } else {
+    document.getElementById('pin-error').textContent='Incorrect PIN — try again';
+    document.getElementById('pin-input').value='';
+  }
+}
+function cancelPin(){
+  document.getElementById('pin-overlay').style.display='none';
+  document.getElementById('pin-input').value='';
+  document.getElementById('pin-error').textContent='';
+}
+function updateCoachUI(){
+  document.getElementById('lock-btn').textContent=coachMode?'🔓':'🔒';
+  const hdr=document.getElementById('athletes-hdr-btn');
+  if(hdr) hdr.innerHTML=coachMode?'<button class="add-btn" onclick="addAthlete()">＋ ADD</button>':'<span class="readonly-badge">VIEW ONLY</span>';
+  const active=document.querySelector('.section.active');
+  if(active){
+    const id=active.id.replace('sec-','');
+    if(id==='athletes') renderAthletes();
+    if(id==='program'){updateProgAthleteSelect();renderProgram();}
+    if(id==='pr') renderPRs();
+  }
+}
+document.addEventListener('keydown',(e)=>{
+  if(e.key==='Enter'&&document.getElementById('pin-overlay').style.display!=='none') submitPin();
+});
+
+// ── HELPERS ────────────────────────────────────────────────────────────────
+function dispW(lbs){return unit==='kg'?Math.round(lbs*0.453592):lbs;}
+function roundToPlate(lbs){return Math.round(lbs/5)*5;}
+function calcDisplayWeight(maxLbs,pct){
+  if(!maxLbs||!pct) return null;
+  const w=roundToPlate(maxLbs*pct/100);
+  return unit==='kg'?Math.round(w*0.453592/2.5)*2.5:w;
+}
+
+function setUnit(u){
+  unit=u;
+  document.querySelectorAll('.unit-opt').forEach(b=>b.classList.toggle('active',b.textContent.toLowerCase()===u));
+  scheduleSave(); renderAthletes(); renderOverview(); renderProgram(); renderPRs();
+}
+function showSection(name){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+name).classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+  if(name==='overview') renderOverview();
+  if(name==='pr') renderPRs();
+  if(name==='program'){updateProgAthleteSelect();renderProgram();}
+  if(name==='accessory') initAccessory();
+}
+
+// ── ATHLETES ───────────────────────────────────────────────────────────────
+function addAthlete(){
+  const nextId=athletes.length?Math.max(...athletes.map(a=>a.id))+1:1;
+  athletes.push({id:nextId,name:'Athlete '+(athletes.length+1),squat:0,bench:0,deadlift:0});
+  scheduleSave(); renderAthletes();
+}
+function deleteAthlete(id){athletes=athletes.filter(a=>a.id!==id);scheduleSave();renderAthletes();}
+function updateName(id,val){const a=athletes.find(a=>a.id===id);if(a){a.name=val;scheduleSave();}}
+function updateLift(id,lift,val){
+  const a=athletes.find(a=>a.id===id);if(!a)return;
+  let lbs=parseFloat(val)||0;if(unit==='kg')lbs=Math.round(lbs/0.453592);
+  a[lift]=lbs;scheduleSave();renderPctTable(id,lift);renderAthleteSubtitle(id);
+}
+function toggleCard(id){document.getElementById('card-'+id).classList.toggle('expanded');}
+function renderPctTable(aid,lift){
+  const a=athletes.find(a=>a.id===aid);
+  const el=document.getElementById('pct-'+aid+'-'+lift);
+  if(!a||!el)return;
+  const max=a[lift]||0;
+  el.innerHTML=PERCENTS.map(p=>{
+    const w=max?Math.round(max*p.pct/100):0;
+    return '<div class="pct-row">'+
+      '<span class="pct-badge" style="color:'+p.color+'">'+p.label+'</span>'+
+      '<div class="pct-bar-wrap"><div class="pct-bar" style="width:'+(max?p.pct:0)+'%;background:'+p.color+'"></div></div>'+
+      '<span class="pct-weight'+(max?'':' empty')+'">'+(max?dispW(w):'—')+'</span>'+
+      '<span class="pct-zone" style="color:'+p.color+'">'+p.zone+'</span>'+
+      '</div>';
+  }).join('');
+}
+function renderAthleteSubtitle(id){
+  const a=athletes.find(a=>a.id===id);
+  const el=document.getElementById('sub-'+id);
+  if(!el||!a)return;
+  const total=(a.squat||0)+(a.bench||0)+(a.deadlift||0);
+  if(!total){el.textContent='Tap to enter lifts';return;}
+  el.textContent='S: '+dispW(a.squat||0)+' • B: '+dispW(a.bench||0)+' • D: '+dispW(a.deadlift||0)+' '+unit+' | Total: '+dispW(total)+' '+unit;
+}
+function renderAthletes(){
+  const list=document.getElementById('athletes-list');
+  const empty=document.getElementById('athletes-empty');
+  const hdr=document.getElementById('athletes-hdr-btn');
+  if(hdr) hdr.innerHTML=coachMode?'<button class="add-btn" onclick="addAthlete()">＋ ADD</button>':'<span class="readonly-badge">VIEW ONLY</span>';
+  if(!athletes.length){list.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  let html='';
+  athletes.forEach(function(a,idx){
+    let liftHTML='';
+    LIFTS.forEach(function(lf){
+      liftHTML+='<div class="lift-row">'+
+        '<div class="lift-label"><span>'+lf.icon+'</span>'+lf.label+' — 1RM</div>'+
+        '<div class="weight-input-wrap">'+
+        '<input class="weight-input" type="number" inputmode="numeric" placeholder="0"'+
+        ' value="'+(a[lf.key]?dispW(a[lf.key]):'')+'"'+
+        (coachMode?' oninput="updateLift('+a.id+',\''+lf.key+'\',this.value)"':' readonly style="opacity:.6"')+' />'+
+        '<span class="unit-badge">'+unit.toUpperCase()+'</span>'+
+        '</div>'+
+        '<div class="pct-table" id="pct-'+a.id+'-'+lf.key+'"></div>'+
+        '</div>';
+    });
+    html+='<div class="athlete-card" id="card-'+a.id+'">'+
+      '<div class="card-header" onclick="toggleCard('+a.id+')">'+
+      '<div class="athlete-num">'+(idx+1)+'</div>'+
+      '<div class="athlete-info">'+
+      '<div class="athlete-name-div"'+(coachMode?' contenteditable="true" onblur="updateName('+a.id+',this.innerText.trim())" onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur()}"':'')+' onclick="event.stopPropagation()">'+a.name+'</div>'+
+      '<div class="athlete-subtitle" id="sub-'+a.id+'">Tap to enter lifts</div>'+
+      '</div>'+
+      (coachMode?'<button class="delete-btn" onclick="event.stopPropagation();deleteAthlete('+a.id+')">🗑</button>':'')+
+      '<span class="chevron">▾</span>'+
+      '</div>'+
+      '<div class="card-body">'+liftHTML+'</div>'+
+      '</div>';
+  });
+  list.innerHTML=html;
+  athletes.forEach(function(a){
+    LIFTS.forEach(function(lf){renderPctTable(a.id,lf.key);});
+    renderAthleteSubtitle(a.id);
+  });
+}
+
+// ── OVERVIEW ───────────────────────────────────────────────────────────────
+function renderOverview(){
+  const grid=document.getElementById('overview-grid');
+  const empty=document.getElementById('overview-empty');
+  const hasData=athletes.some(a=>a.squat||a.bench||a.deadlift);
+  if(!athletes.length||!hasData){grid.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  grid.innerHTML=athletes.map(function(a){
+    const total=(a.squat||0)+(a.bench||0)+(a.deadlift||0);
+    return '<div class="overview-row">'+
+      '<div class="overview-athlete-name">'+(a.name||'Unnamed')+'</div>'+
+      '<div class="overview-lifts">'+
+      ['squat','bench','deadlift'].map(function(l,i){
+        return '<div class="overview-lift-cell">'+
+          '<div class="olc-label">'+['Squat','Bench','Deadlift'][i]+'</div>'+
+          '<div class="olc-value'+(a[l]?'':' zero')+'">'+(a[l]?dispW(a[l]):'—')+'</div>'+
+          '</div>';
+      }).join('')+
+      '</div>'+
+      '<div class="olc-total-row">'+
+      '<span class="olc-total-label">Total '+unit.toUpperCase()+'</span>'+
+      '<span class="olc-total-value">'+(total?dispW(total):'—')+'</span>'+
+      '</div></div>';
+  }).join('');
+}
+
+// ── RECORDS ────────────────────────────────────────────────────────────────
+function getPR(aid,lift){return ((prs[aid]||{})[lift])||{weight:0,meet:'',date:''};}
+function updatePR(aid,lift,field,val){
+  if(!prs[aid])prs[aid]={};
+  if(!prs[aid][lift])prs[aid][lift]={weight:0,meet:'',date:''};
+  if(field==='weight'){
+    let lbs=parseFloat(val)||0;
+    if(unit==='kg')lbs=Math.round(lbs/0.453592);
+    prs[aid][lift].weight=lbs;
+  } else {
+    prs[aid][lift][field]=val;
+  }
+  scheduleSave();
+  const el=document.getElementById('prw-'+aid+'-'+lift);
+  if(el){
+    const w=prs[aid][lift].weight;
+    el.textContent=w?dispW(w)+' '+unit:'—';
+    el.className='pr-weight-display'+(w?'':' zero');
+  }
+}
+function renderPRs(){
+  const list=document.getElementById('pr-list');
+  const empty=document.getElementById('pr-empty');
+  if(!athletes.length){list.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  list.innerHTML=athletes.map(function(a,idx){
+    const prTotal=LIFTS.reduce(function(sum,lf){return sum+(((prs[a.id]||{})[lf.key]||{}).weight||0);},0);
+    let cells='';
+    LIFTS.forEach(function(lf){
+      const pr=getPR(a.id,lf.key);
+      const wDisp=pr.weight?dispW(pr.weight)+' '+unit:'—';
+      cells+='<div class="pr-lift-cell">'+
+        '<div class="pr-lift-label">'+lf.icon+' '+lf.label+'</div>'+
+        '<div class="pr-weight-display'+(pr.weight?'':' zero')+'" id="prw-'+a.id+'-'+lf.key+'">'+wDisp+'</div>'+
+        (coachMode?
+          '<div class="pr-field-label">Weight</div>'+
+          '<input class="pr-input" type="number" inputmode="numeric" placeholder="0" value="'+(pr.weight?dispW(pr.weight):'')+'" oninput="updatePR('+a.id+',\''+lf.key+'\',\'weight\',this.value)" />'+
+          '<div class="pr-field-label">Meet</div>'+
+          '<input class="pr-text-input" type="text" placeholder="Meet name…" value="'+(pr.meet||'')+'" oninput="updatePR('+a.id+',\''+lf.key+'\',\'meet\',this.value)" />'+
+          '<div class="pr-field-label">Date</div>'+
+          '<input class="pr-text-input" type="text" placeholder="e.g. Mar 2025" value="'+(pr.date||'')+'" oninput="updatePR('+a.id+',\''+lf.key+'\',\'date\',this.value)" />'
+          :
+          '<div style="font-size:11px;color:var(--muted);margin-top:3px;font-family:\'Barlow\',sans-serif">'+(pr.meet||'')+'</div>'+
+          '<div style="font-size:10px;color:var(--border);margin-top:1px;font-family:\'Barlow\',sans-serif">'+(pr.date||'')+'</div>'
+        )+
+        '</div>';
+    });
+    return '<div class="pr-card">'+
+      '<div class="pr-card-header">'+
+      '<div class="pr-athlete-num">'+(idx+1)+'</div>'+
+      '<div class="pr-athlete-name">'+(a.name||'Unnamed')+'</div>'+
+      '<div class="pr-total-badge">'+(prTotal?'🏆 '+dispW(prTotal)+' '+unit:'')+'</div>'+
+      '</div>'+
+      '<div class="pr-lifts">'+cells+'</div>'+
+      '</div>';
+  }).join('');
+}
+
+// ── PROGRAM ────────────────────────────────────────────────────────────────
+function getProgData(aid,week,liftKey){
+  var k=''+aid;
+  if(!program[k])program[k]={};
+  if(!program[k][week])program[k][week]={};
+  if(!program[k][week][liftKey]){
+    var tmpl=PROGRAM_TEMPLATE[week-1];
+    var sets=[];
+    for(var i=0;i<tmpl.sets;i++) sets.push({reps:tmpl.reps,pct:tmpl.pct});
+    program[k][week][liftKey]={sets:sets};
+  }
+  return program[k][week][liftKey];
+}
+function updateProgSet(aid,week,liftKey,setIdx,field,val){
+  var d=getProgData(aid,week,liftKey);
+  if(field==='reps'||field==='pct') val=parseInt(val)||0;
+  d.sets[setIdx][field]=val; scheduleSave();
+  var el=document.getElementById('pw-'+aid+'-'+week+'-'+liftKey+'-'+setIdx);
+  if(el){
+    var a=athletes.find(function(a){return a.id==aid;});
+    var w=calcDisplayWeight(a?a[liftKey]:0,d.sets[setIdx].pct);
+    el.textContent=w?w+' '+unit:'No 1RM';
+    el.className='prog-weight-out'+(w?'':' zero');
+  }
+  var es=document.getElementById('wsum-sets-'+week);
+  var er=document.getElementById('wsum-reps-'+week);
+  if(es||er){
+    var ts=0,tr=0;
+    LIFTS.forEach(function(lf){var d2=getProgData(aid,week,lf.key);d2.sets.forEach(function(s){ts++;tr+=(s.reps||0);});});
+    if(es)es.textContent=ts; if(er)er.textContent=tr;
+  }
+}
+function addProgSet(aid,week,liftKey){
+  var d=getProgData(aid,week,liftKey);
+  var last=d.sets[d.sets.length-1]||{reps:5,pct:75};
+  d.sets.push({reps:last.reps,pct:last.pct}); scheduleSave(); renderProgram();
+}
+function delProgSet(aid,week,liftKey,setIdx){
+  var d=getProgData(aid,week,liftKey);
+  if(d.sets.length<=1)return;
+  d.sets.splice(setIdx,1); scheduleSave(); renderProgram();
+}
+function updateProgAthleteSelect(){
+  var sel=document.getElementById('prog-athlete-select');
+  var cur=sel.value;
+  sel.innerHTML='<option value="">— Select Athlete —</option>'+
+    athletes.map(function(a){return '<option value="'+a.id+'"'+(a.id==cur?' selected':'')+'>'+( a.name||'Unnamed')+'</option>';}).join('');
+}
+function setProgWeek(w){
+  progWeek=w;
+  document.querySelectorAll('.week-tab').forEach(function(t){t.classList.toggle('active',parseInt(t.dataset.week)===w);});
+  var sel=document.getElementById('prog-athlete-select');
+  renderProgWeek(sel.value?parseInt(sel.value):null,w);
+}
+function renderProgram(){
+  updateProgAthleteSelect();
+  var sel=document.getElementById('prog-athlete-select');
+  var aid=sel.value?parseInt(sel.value):null;
+  var content=document.getElementById('prog-content');
+  if(!aid){
+    content.innerHTML='<div class="prog-empty"><div class="prog-empty-icon">📅</div><div class="prog-empty-title">Select An Athlete</div><div class="prog-empty-sub">Choose an athlete to view their 12-week program</div></div>';
+    return;
+  }
+  var tabsHTML='<div class="week-tabs" id="week-tabs">';
+  for(var w=1;w<=12;w++) tabsHTML+='<button class="week-tab'+(w===progWeek?' active':'')+'" data-week="'+w+'" onclick="setProgWeek('+w+')">WK '+w+'</button>';
+  tabsHTML+='</div>';
+  content.innerHTML=tabsHTML+'<div id="prog-week-body"></div>';
+  renderProgWeek(aid,progWeek);
+}
+function renderProgWeek(aid,week){
+  var body=document.getElementById('prog-week-body');
+  if(!aid||!body)return;
+  var a=athletes.find(function(a){return a.id==aid;});
+  if(!a)return;
+  var ts=0,tr=0;
+  LIFTS.forEach(function(lf){var d=getProgData(aid,week,lf.key);d.sets.forEach(function(s){ts++;tr+=(s.reps||0);});});
+  var sumHTML='<div class="week-summary">'+
+    '<div class="week-sum-item"><div class="week-sum-label">Week</div><div class="week-sum-val">'+week+'/12</div></div>'+
+    '<div class="week-sum-item"><div class="week-sum-label">Total Sets</div><div class="week-sum-val" id="wsum-sets-'+week+'">'+ts+'</div></div>'+
+    '<div class="week-sum-item"><div class="week-sum-label">Total Reps</div><div class="week-sum-val" id="wsum-reps-'+week+'">'+tr+'</div></div>'+
+    '</div>';
+  var liftCards='';
+  LIFTS.forEach(function(lf){
+    var d=getProgData(aid,week,lf.key);
+    var maxLbs=a[lf.key]||0;
+    var maxDisp=maxLbs?dispW(maxLbs)+' '+unit:'No 1RM set';
+    var rows='';
+    d.sets.forEach(function(s,si){
+      var w=calcDisplayWeight(maxLbs,s.pct);
+      var wDisp=w?w+' '+unit:'No 1RM';
+      var selOpts=PCT_OPTS.map(function(p){return '<option value="'+p+'"'+(p===s.pct?' selected':'')+'>'+p+'%</option>';}).join('');
+      rows+='<tr>'+
+        '<td style="color:var(--muted);font-family:\'Barlow Condensed\',sans-serif;font-size:13px;font-weight:700">SET '+(si+1)+'</td>'+
+        '<td>'+(coachMode?'<input class="prog-mini-input" type="number" inputmode="numeric" min="1" max="30" value="'+(s.reps||'')+'" placeholder="5" oninput="updateProgSet('+aid+','+week+',\''+lf.key+'\','+si+',\'reps\',this.value)" />'
+          :'<span class="prog-stat-text">'+(s.reps||'')+'</span>')+'</td>'+
+        '<td>'+(coachMode?'<select class="prog-pct-select" onchange="updateProgSet('+aid+','+week+',\''+lf.key+'\','+si+',\'pct\',this.value)">'+selOpts+'</select>'
+          :'<span class="prog-pct-text">'+s.pct+'%</span>')+'</td>'+
+        '<td><span class="prog-weight-out'+(w?'':' zero')+'" id="pw-'+aid+'-'+week+'-'+lf.key+'-'+si+'">'+wDisp+'</span></td>'+
+        '<td>'+(coachMode?'<button class="del-set-btn" onclick="delProgSet('+aid+','+week+',\''+lf.key+'\','+si+')">✕</button>':'')+'</td>'+
+        '</tr>';
+    });
+    liftCards+='<div class="prog-lift-card">'+
+      '<div class="prog-lift-header">'+
+      '<div class="prog-lift-title">'+lf.icon+' '+lf.label+'</div>'+
+      '<div class="prog-1rm-badge">1RM: '+maxDisp+'</div>'+
+      '</div>'+
+      '<table class="prog-sets-table">'+
+      '<thead><tr><th>Set</th><th>Reps</th><th>%1RM</th><th>Weight</th><th></th></tr></thead>'+
+      '<tbody>'+rows+'</tbody></table>'+
+      (coachMode?'<button class="add-set-btn" onclick="addProgSet('+aid+','+week+',\''+lf.key+'\')">＋ Add Set</button>':'')+
+      '</div>';
+  });
+  body.innerHTML=sumHTML+'<div class="program-body">'+liftCards+'</div>';
+}
+
+// ── ACCESSORY ──────────────────────────────────────────────────────────────
+function renderMuscleTab(){
+  document.getElementById('muscle-tabs').innerHTML=MUSCLE_GROUPS.map(function(mg){
+    return '<button class="muscle-tab'+(mg.id===activeMuscle?' active':'')+'" onclick="setMuscle(\''+mg.id+'\')">'+mg.icon+' '+mg.label+'</button>';
+  }).join('');
+}
+function setMuscle(id){activeMuscle=id;renderMuscleTab();filterAccessory();}
+function getMuscleColor(id){return(MUSCLE_GROUPS.find(function(mg){return mg.id===id;})||{color:'#777'}).color;}
+function filterAccessory(){
+  var q=document.getElementById('acc-search-input').value.toLowerCase().trim();
+  var filtered=ACCESSORIES.filter(function(ex){
+    var matchMuscle=activeMuscle==='all'||ex.muscle===activeMuscle;
+    var matchSearch=!q||ex.name.toLowerCase().includes(q)||ex.muscle.toLowerCase().includes(q)||ex.equipment.toLowerCase().includes(q);
+    return matchMuscle&&matchSearch;
+  });
+  var el=document.getElementById('acc-list');
+  if(!filtered.length){el.innerHTML='<div class="no-results"><div style="font-size:36px;opacity:.3;margin-bottom:8px">🔍</div><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;opacity:.4">No exercises found</div></div>';return;}
+  el.innerHTML=filtered.map(function(ex){
+    var color=getMuscleColor(ex.muscle);
+    var isOpen=openAccId===ex.muscle+'-'+ex.name;
+    var mgLabel=(MUSCLE_GROUPS.find(function(mg){return mg.id===ex.muscle;})||{label:ex.muscle}).label;
+    return '<div class="acc-card'+(isOpen?' open':'')+'" onclick="toggleAcc(\''+ex.muscle+'-'+ex.name.replace(/'/g,'')+'\')">'+
+      '<div class="acc-card-header">'+
+      '<div class="acc-muscle-dot" style="background:'+color+'"></div>'+
+      '<div class="acc-name">'+ex.name+'</div>'+
+      '<div class="acc-tags"><span class="acc-tag" style="color:'+color+'">'+mgLabel+'</span><span class="acc-tag">'+ex.type+'</span></div>'+
+      '<span class="acc-chevron">▾</span>'+
+      '</div>'+
+      '<div class="acc-detail">'+
+      '<p class="acc-desc">'+ex.desc+'</p>'+
+      '<div class="acc-detail-grid">'+
+      '<div class="acc-detail-item"><div class="acc-detail-label">Equipment</div><div class="acc-detail-val">'+ex.equipment+'</div></div>'+
+      '<div class="acc-detail-item"><div class="acc-detail-label">Type</div><div class="acc-detail-val">'+ex.type+'</div></div>'+
+      '</div>'+
+      '<div class="acc-sets-rec"><div class="acc-set-chip">Sets: <span>'+ex.sets+'</span></div><div class="acc-set-chip">Reps: <span>'+ex.reps+'</span></div></div>'+
+      '<div class="acc-cues" style="margin-top:10px;border-left:3px solid '+color+'">'+
+      '<div class="acc-cues-title" style="color:'+color+'">COACHING CUES</div>'+
+      ex.cues.map(function(c){return '<div class="acc-cue" style="color:var(--muted)">'+c+'</div>';}).join('')+
+      '</div></div></div>';
+  }).join('');
+}
+function toggleAcc(uid){openAccId=openAccId===uid?null:uid;filterAccessory();}
+function initAccessory(){renderMuscleTab();filterAccessory();}
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+async function init(){
+  try{
+    onSnapshot(doc(db,'spartans','data'),function(snap){
+      if(snap.exists()){
+        var data=snap.data();
+        athletes=data.athletes||[];
+        program=data.program||{};
+        unit=data.unit||'lbs';
+        prs=data.prs||{};
+        document.querySelectorAll('.unit-opt').forEach(function(b){b.classList.toggle('active',b.textContent.toLowerCase()===unit);});
+        renderAthletes(); renderOverview(); setSyncBadge('synced');
+      } else {
+        athletes=[];program={};prs={};renderAthletes();setSyncBadge('synced');
+      }
+      document.getElementById('loading').style.display='none';
+    });
+  } catch(e){setSyncBadge('error');document.getElementById('loading').style.display='none';}
+}
+
+window.setUnit=setUnit; window.showSection=showSection;
+window.addAthlete=addAthlete; window.deleteAthlete=deleteAthlete;
+window.updateName=updateName; window.updateLift=updateLift;
+window.toggleCard=toggleCard; window.updateProgSet=updateProgSet;
+window.addProgSet=addProgSet; window.delProgSet=delProgSet;
+window.setProgWeek=setProgWeek; window.renderProgram=renderProgram;
+window.setMuscle=setMuscle; window.filterAccessory=filterAccessory;
+window.toggleAcc=toggleAcc; window.updatePR=updatePR;
+window.toggleCoachMode=toggleCoachMode; window.submitPin=submitPin; window.cancelPin=cancelPin;
+
+init();
+</script>
+
+</body>
+</html>
